@@ -1,8 +1,4 @@
-¡Claro! Aquí tienes un archivo README para tu proyecto:
-
----
-
-# Proyecto de Clasificación con Regresión Logística
+Proyecto de Clasificación con Regresión Logística
 
 Este proyecto utiliza un modelo de regresión logística para clasificar datos de ejemplo. El código incluye la creación de un DataFrame, la división de los datos en conjuntos de entrenamiento y prueba, el entrenamiento del modelo, la evaluación del modelo y la visualización de los resultados mediante gráficos.
 
