@@ -1,0 +1,128 @@
+import os
+import tkinter as tk
+from tkinter import ttk, filedialog
+import cv2
+import face_recognition
+from sklearn import svm
+import numpy as np
+from PIL import Image, ImageTk
+import threading
+
+img_size = 224  # Tamaño de imagen predeterminado
+def entrenar_modelo():
+    X = []
+    y = []
+    
+    # Obtener valores de los parámetros
+    model_type = combo_model_type.get()
+    kernel = combo_kernel.get()
+    gamma = float(gamma_slider.get())
+    C = float(C_slider.get())
+    
+    # Cargar imágenes del dataset
+    dataset_path = entry_dataset.get()
+    files = os.listdir(dataset_path)
+    
+    for file in files:
+        # Cargar imagen
+        img_path = os.path.join(dataset_path, file)
+        img = cv2.imread(img_path)
+        img = cv2.resize(img, (img_size, img_size))
+        img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        
+        # Detectar rostros y obtener codificaciones faciales
+        img_encodings = face_recognition.face_encodings(img_rgb)
+        
+        if img_encodings:  # Verificar si se detectaron rostros
+            img_encoding = img_encodings[0]
+            X.append(img_encoding)
+            y.append(file.split('.')[0])
+        
+        # Visualizar proceso de entrenamiento
+        img_rgb = Image.fromarray(img_rgb)
+        img_tk = ImageTk.PhotoImage(img_rgb)
+        label_img.config(image=img_tk)
+        label_img.image = img_tk
+        label_resultado.config(text=f"Procesando imagen {file}...")
+        root.update_idletasks()  # Actualizar interfaz gráfica
+        
+    # Entrenar modelo
+    clf = svm.SVC(kernel=kernel, gamma=gamma, C=C)
+    clf.fit(np.array(X), np.array(y))
+    from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
+    # Evaluación del modelo
+    from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
+    predicciones = clf.predict(np.array(X))
+    precision = accuracy_score(np.array(y), predicciones)
+    reporte_clasificacion = classification_report(np.array(y), predicciones)
+    matriz_confusion = confusion_matrix(np.array(y), predicciones)
+
+    print("Precisión:", precision)
+    print("Reporte de clasificación:\n", reporte_clasificacion)
+    print("Matriz de confusión:\n", matriz_confusion)
+# Mostrar resultado
+
+    label_resultado.config(text="Entrenamiento completo")
+    root.update_idletasks()  # Actualizar interfaz gráfica
+def seleccionar_dataset():
+    dataset_path = filedialog.askdirectory()
+    entry_dataset.delete(0, tk.END)
+    entry_dataset.insert(0, dataset_path)
+
+def actualizar_gamma(val):
+    label_gamma.config(text=f"Gamma: {val}")
+
+def actualizar_C(val):
+    label_C.config(text=f"C: {val}")
+
+root = tk.Tk()
+root.title("Entrenamiento de Modelo")
+
+# Tipo de modelo
+label_model_type = tk.Label(root, text="Tipo de modelo:")
+label_model_type.grid(row=0, column=0, padx=5, pady=5)
+combo_model_type = ttk.Combobox(root, values=["SVC", "RFC", "DTC"])
+combo_model_type.grid(row=0, column=1, padx=5, pady=5)
+
+# Kernel
+label_kernel = tk.Label(root, text="Kernel:")
+label_kernel.grid(row=1, column=0, padx=5, pady=5)
+combo_kernel = ttk.Combobox(root, values=["linear", "poly", "rbf", "sigmoid"])
+combo_kernel.grid(row=1, column=1, padx=5, pady=5)
+
+# Gamma
+label_gamma = tk.Label(root, text="Gamma:")
+label_gamma.grid(row=2, column=0, padx=5, pady=5)
+gamma_slider = tk.Scale(root, from_=0.0, to=1.0, resolution=0.1, orient=tk.HORIZONTAL, command=actualizar_gamma)
+gamma_slider.grid(row=2, column=1, padx=5, pady=5)
+
+# C
+label_C = tk.Label(root, text="C:")
+label_C.grid(row=3, column=0, padx=5, pady=5)
+C_slider = tk.Scale(root, from_=0.0, to=10.0, resolution=0.1, orient=tk.HORIZONTAL, command=actualizar_C)
+C_slider.grid(row=3, column=1, padx=5, pady=5)
+
+# Ruta del dataset
+label_dataset = tk.Label(root, text="Ruta del dataset:")
+label_dataset.grid(row=4, column=0, padx=5, pady=5)
+entry_dataset = tk.Entry(root, width=50)
+entry_dataset.grid(row=4, column=1, padx=5, pady=5)
+button_seleccionar_dataset = tk.Button(root, text="Seleccionar", command=seleccionar_dataset)
+button_seleccionar_dataset.grid(row=4, column=2, padx=5, pady=5)
+
+def entrenar_modelo_hilo():
+    thread = threading.Thread(target=entrenar_modelo)
+    thread.start()
+
+button_entrenar = tk.Button(root, text="Entrenar", command=entrenar_modelo_hilo)
+button_entrenar.grid(row=5, column=1, padx=5, pady=5)
+
+# Etiqueta para mostrar imagen
+label_img = tk.Label(root)
+label_img.grid(row=6, column=1, padx=5, pady=5)
+
+# Etiqueta para mostrar resultado
+label_resultado = tk.Label(root, text="")
+label_resultado.grid(row=7, column=1, padx=5, pady=5)
+
+root.mainloop()
