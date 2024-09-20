@@ -6,3 +6,4 @@
 1. Proyecto 1: Análisis Exploratorio de Datos
 2. Proyecto 2: Clasificación con Regresión Logística
 3. Proyecto 3: Red Neuronal para Reconocimiento de numeros, letras y simbolos con computer vision
+4. Proyecto 4: Regresión Lineal para Predicción de Precios
