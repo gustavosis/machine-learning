@@ -1,4 +1,4 @@
-Proyecto de Reconocimiento Facial con TensorFlow y Face Recognition
+#Proyecto de Reconocimiento Facial con TensorFlow y Face Recognition
 Autor: Gustavo Isidro Arretureta González
 Correo: gustavo25880521@gmail.com
 Descripción:
